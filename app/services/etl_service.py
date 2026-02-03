@@ -54,3 +54,56 @@ def transform_load_service():
 
     # 2. Se transforman con Pandas
     df = pd.json_normalize(documents)
+
+    # Se seleccionan y renombran columnas
+    df = df[[
+        "id",
+        "name",
+        "status",
+        "species",
+        "gender",
+        "origin.name",
+        "location.name",
+        "image"
+    ]]
+
+    df = df.rename(columns={
+        "id": "id_personaje",
+        "name": "nombre",
+        "status": "estado",
+        "species": "especie",
+        "gender": "genero",
+        "origin.name": "origen",
+        "location.name": "ubicacion",
+        "image": "imagen"
+    })
+
+    # Manejo de datos nulos
+    df = df.fillna("N/A")
+
+    # 3. Se carga a MySQL
+    Base.metadata.create_all(bind=engine)
+
+    registros_insertados = 0
+
+    with engine.begin() as connection:
+        for _, row in df.iterrows():
+            insert_stmt = Personaje.__table__.insert().prefix_with("IGNORE").values(
+                id_personaje=int(row["id_personaje"]),
+                nombre=row["nombre"],
+                estado=row["estado"],
+                especie=row["especie"],
+                genero=row["genero"],
+                origen=row["origen"],
+                ubicacion=row["ubicacion"],
+                imagen=row["imagen"]
+            )
+            result = connection.execute(insert_stmt)
+            registros_insertados += result.rowcount
+
+    return {
+        "mensaje": "Pipeline finalizado",
+        "registros_procesados": registros_insertados,
+        "tabla_destino": "personajes_master",
+        "status": 200
+    }
