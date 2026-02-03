@@ -126,3 +126,40 @@ def reset_system_service():
         }
     finally:
         db.close()
+
+
+ ### Se crea la funcion extract_load_service ###
+  def extract_characters_service(cantidad: int):
+    url = "https://rickandmortyapi.com/api/character"
+    page = 1
+    total_guardados = 0
+
+    while total_guardados < cantidad:
+        response = requests.get(url, params={"page": page})
+        data = response.json()
+        characters = data.get("results", [])
+
+        for character in characters:
+            if total_guardados >= cantidad:
+                break
+
+            character_id = character["id"]
+
+            # Esta parte del codigo funciona para evitar duplicados
+            if mongo_collection.find_one({"id": character_id}):
+                continue
+
+            mongo_collection.insert_one(character)
+            total_guardados += 1
+
+        if data["info"]["next"] is None:
+            break
+
+        page += 1
+
+    return {
+        "mensaje": "Extracción completada",
+        "registros_guardados": total_guardados,
+        "fuente": "Rick and Morty API"
+    }
+        
