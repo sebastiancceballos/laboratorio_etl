@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-from app.database import mongo_collection, engine
+from app.database import mongo_collection, engine, SessionLocal
 from app.models.personajes_sql import Base, Personaje
 
 # ---------- ENDPOINT A: EXTRACT ----------
