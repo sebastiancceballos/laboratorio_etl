@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 from app.database import mongo_collection, engine, SessionLocal
 from app.models.personajes_sql import Base, Personaje
+from sqlalchemy import text
+
 
 # ---------- ENDPOINT A: EXTRACT ----------
 def extract_characters_service(cantidad: int):
